@@ -23,13 +23,18 @@ import {
   Trash2,
   Plus,
 } from "lucide-react";
-import { cases, clients, lawyers, documents, calendarEvents, tasks, invoices, timelineEvents, currentOrganization } from "@/data";
+import { useAuth } from "@/context/auth-context";
+import { cases, clients, lawyers, documents, calendarEvents, tasks, invoices, timelineEvents } from "@/data";
 import { formatDate, formatDateTime, formatCurrency, getStatusColor, getInitials } from "@/lib/utils";
 import Link from "next/link";
 
 export default function CaseDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const caseItem = cases.find((c) => c.id === id);
+  const { currentOrganization } = useAuth();
+  
+  // Filter cases by organization
+  const orgCases = cases.filter(c => c.organizationId === currentOrganization?.id);
+  const caseItem = orgCases.find((c) => c.id === id);
   
   if (!caseItem) {
     return (

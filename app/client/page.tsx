@@ -1,3 +1,5 @@
+"use client";
+
 import DashboardLayout from "@/components/dashboard-layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,15 +11,22 @@ import {
   MessageSquare,
   CreditCard,
 } from "lucide-react";
-import { cases, documents, calendarEvents, invoices, currentUser } from "@/data";
+import { useAuth } from "@/context/auth-context";
+import { cases, documents, calendarEvents, invoices, clients } from "@/data";
 import { formatDate, formatCurrency, getStatusColor } from "@/lib/utils";
 import Link from "next/link";
 
 export default function ClientDashboard() {
-  const myCases = cases.filter((c) => c.clientId === "client-1");
+  const { currentUser } = useAuth();
+  
+  // Get client's organization
+  const clientData = clients.find(c => c.email === currentUser?.email);
+  const clientId = clientData?.id || "client-1";
+  
+  const myCases = cases.filter((c) => c.clientId === clientId);
   const activeCases = myCases.filter((c) => c.status !== "closed");
-  const myDocuments = documents.filter((d) => d.caseId && cases.some((c) => c.clientId === "client-1" && c.id === d.caseId));
-  const myInvoices = invoices.filter((i) => i.clientId === "client-1");
+  const myDocuments = documents.filter((d) => d.caseId && myCases.some((c) => c.id === d.caseId));
+  const myInvoices = invoices.filter((i) => i.clientId === clientId);
 
   const stats = [
     { title: "Active Cases", value: activeCases.length.toString(), icon: Briefcase },
@@ -31,7 +40,7 @@ export default function ClientDashboard() {
       <div className="space-y-8">
         <div>
           <h1 className="text-3xl font-bold text-navy-900">Dashboard</h1>
-          <p className="text-gray-500">Welcome back, {currentUser.name}</p>
+          <p className="text-gray-500">Welcome back, {currentUser?.name || "Client"}</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

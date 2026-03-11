@@ -1,3 +1,5 @@
+"use client";
+
 import DashboardLayout from "@/components/dashboard-layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,15 +12,28 @@ import {
   ArrowUpRight,
   ArrowDownRight,
 } from "lucide-react";
-import { cases, tasks, calendarEvents, currentUser, clients } from "@/data";
+import { useAuth } from "@/context/auth-context";
+import { cases, tasks, calendarEvents, clients, lawyers } from "@/data";
 import { formatDate, formatDateTime, getStatusColor } from "@/lib/utils";
 import Link from "next/link";
 
 export default function LawyerDashboard() {
-  const myCases = cases.filter((c) => c.assignedLawyerId === "lawyer-1");
+  const { currentUser, currentOrganization } = useAuth();
+  
+  // Get lawyer's data based on current user
+  const lawyerData = lawyers.find(l => l.email === currentUser?.email);
+  const lawyerId = lawyerData?.id || "lawyer-1";
+  const userId = currentUser?.id || "user-2";
+  
+  // Filter by organization
+  const orgCases = cases.filter(c => c.organizationId === currentOrganization?.id);
+  const orgTasks = tasks.filter(t => t.organizationId === currentOrganization?.id);
+  const orgEvents = calendarEvents.filter(e => e.organizationId === currentOrganization?.id);
+  
+  const myCases = orgCases.filter((c) => c.assignedLawyerId === lawyerId);
   const activeCases = myCases.filter((c) => c.status === "in_progress" || c.status === "open");
-  const pendingTasks = tasks.filter((t) => t.assignedToId === "user-2" && t.status !== "completed");
-  const todayEvents = calendarEvents.filter((e) => {
+  const pendingTasks = orgTasks.filter((t) => t.assignedToId === userId && t.status !== "completed");
+  const todayEvents = orgEvents.filter((e) => {
     const today = new Date();
     const eventDate = new Date(e.startDate);
     return eventDate.toDateString() === today.toDateString();
@@ -38,7 +53,7 @@ export default function LawyerDashboard() {
       <div className="space-y-8">
         <div>
           <h1 className="text-3xl font-bold text-navy-900">Dashboard</h1>
-          <p className="text-gray-500">Welcome back, {currentUser.name}</p>
+          <p className="text-gray-500">Welcome back, {currentUser?.name || "Lawyer"}</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
