@@ -130,16 +130,6 @@ export default function LawyerCaseDetailPage() {
                     <h3 className="font-medium mb-2">Description</h3>
                     <p className="text-gray-600">{caseItem.description}</p>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <h3 className="font-medium mb-2">Case Type</h3>
-                      <p className="text-gray-600">{caseItem.type}</p>
-                    </div>
-                    <div>
-                      <h3 className="font-medium mb-2">Priority</h3>
-                      <Badge variant="outline">{caseItem.priority || "Medium"}</Badge>
-                    </div>
-                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -236,7 +226,7 @@ export default function LawyerCaseDetailPage() {
                       <div className="flex-1">
                         <p className="font-medium">{event.title}</p>
                         <p className="text-sm text-gray-500">{event.description}</p>
-                        <p className="text-xs text-gray-400">{formatDateTime(event.date)}</p>
+                        <p className="text-xs text-gray-400">{formatDateTime(event.createdAt)}</p>
                       </div>
                     </div>
                   ))}
