@@ -1,3 +1,5 @@
+"use client";
+
 import DashboardLayout from "@/components/dashboard-layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,34 +16,44 @@ import {
   FileText,
   User,
 } from "lucide-react";
-import { cases, clients, lawyers, tasks, calendarEvents, currentOrganization, currentUser } from "@/data";
+import { useAuth } from "@/context/auth-context";
+import { cases, clients, lawyers, tasks, calendarEvents } from "@/data";
 import { formatDate, formatDateTime, getStatusColor, getInitials } from "@/lib/utils";
 import Link from "next/link";
 
 export default function LawFirmDashboard() {
-  const activeCases = cases.filter((c) => c.status === "in_progress" || c.status === "open").length;
-  const todayEvents = calendarEvents.filter((e) => {
+  const { currentUser, currentOrganization } = useAuth();
+  
+  // Filter data by organization
+  const orgCases = cases.filter((c) => c.organizationId === currentOrganization?.id);
+  const orgClients = clients.filter((c) => c.organizationId === currentOrganization?.id);
+  const orgLawyers = lawyers.filter((l) => l.organizationId === currentOrganization?.id);
+  const orgTasks = tasks.filter((t) => t.organizationId === currentOrganization?.id);
+  const orgEvents = calendarEvents.filter((e) => e.organizationId === currentOrganization?.id);
+  
+  const activeCases = orgCases.filter((c) => c.status === "in_progress" || c.status === "open").length;
+  const todayEvents = orgEvents.filter((e) => {
     const today = new Date();
     const eventDate = new Date(e.startDate);
     return eventDate.toDateString() === today.toDateString();
   });
-  const pendingTasks = tasks.filter((t) => t.status !== "completed").length;
+  const pendingTasks = orgTasks.filter((t) => t.status !== "completed").length;
 
-  const getClientName = (clientId: string) => clients.find((c) => c.id === clientId)?.name || "Unknown";
-  const getLawyerName = (lawyerId: string) => lawyers.find((l) => l.id === lawyerId)?.name || "Unknown";
+  const getClientName = (clientId: string) => orgClients.find((c) => c.id === clientId)?.name || "Unknown";
+  const getLawyerName = (lawyerId: string) => orgLawyers.find((l) => l.id === lawyerId)?.name || "Unknown";
 
   const stats = [
     { title: "Active Cases", value: activeCases.toString(), icon: Briefcase, change: "+5", trend: "up" },
-    { title: "Total Clients", value: clients.length.toString(), icon: Users, change: "+3", trend: "up" },
+    { title: "Total Clients", value: orgClients.length.toString(), icon: Users, change: "+3", trend: "up" },
     { title: "Hearings Today", value: todayEvents.length.toString(), icon: Calendar, change: "0", trend: "neutral" },
     { title: "Pending Tasks", value: pendingTasks.toString(), icon: CheckSquare, change: "-2", trend: "down" },
   ];
 
   const caseStatusData = [
-    { status: "Open", count: cases.filter((c) => c.status === "open").length, color: "bg-blue-500" },
-    { status: "In Progress", count: cases.filter((c) => c.status === "in_progress").length, color: "bg-yellow-500" },
-    { status: "Pending", count: cases.filter((c) => c.status === "pending").length, color: "bg-orange-500" },
-    { status: "Closed", count: cases.filter((c) => c.status === "closed").length, color: "bg-green-500" },
+    { status: "Open", count: orgCases.filter((c) => c.status === "open").length, color: "bg-blue-500" },
+    { status: "In Progress", count: orgCases.filter((c) => c.status === "in_progress").length, color: "bg-yellow-500" },
+    { status: "Pending", count: orgCases.filter((c) => c.status === "pending").length, color: "bg-orange-500" },
+    { status: "Closed", count: orgCases.filter((c) => c.status === "closed").length, color: "bg-green-500" },
   ];
 
   const totalCases = caseStatusData.reduce((acc, item) => acc + item.count, 0);
@@ -51,7 +63,7 @@ export default function LawFirmDashboard() {
       <div className="space-y-8">
         <div>
           <h1 className="text-3xl font-bold text-navy-900">Dashboard</h1>
-          <p className="text-gray-500">Welcome back, {currentUser.name}</p>
+          <p className="text-gray-500">Welcome back, {currentUser?.name || "User"}</p>
         </div>
 
         {/* Stats Grid */}

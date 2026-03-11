@@ -14,6 +14,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
 import {
   Scale,
@@ -34,8 +35,10 @@ import {
   ClipboardList,
   Shield,
   Activity,
+  ArrowRightLeft,
 } from "lucide-react";
-import { currentUser, currentOrganization, notifications } from "@/data";
+import { useAuth } from "@/context/auth-context";
+import { notifications, users } from "@/data";
 import { getInitials } from "@/lib/utils";
 
 interface SidebarItem {
@@ -153,7 +156,37 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const sidebar = sidebarMap[role] || lawfirmSidebar;
+  const { currentUser, currentOrganization, logout, switchUser } = useAuth();
+  
   const unreadNotifications = notifications.filter((n) => !n.isRead).length;
+
+  // Get user notifications
+  const userNotifications = currentUser 
+    ? notifications.filter((n) => n.userId === currentUser.id) 
+    : [];
+
+  const handleSwitchUser = (userId: string) => {
+    switchUser(userId);
+    // Get the target user to determine where to redirect
+    const targetUser = users.find((u) => u.id === userId);
+    if (targetUser) {
+      // Redirect to appropriate dashboard based on role
+      switch (targetUser.role) {
+        case "super_admin":
+          window.location.href = "/admin";
+          break;
+        case "lawfirm_admin":
+          window.location.href = "/lawfirm";
+          break;
+        case "lawyer":
+          window.location.href = "/lawyer";
+          break;
+        case "client":
+          window.location.href = "/client";
+          break;
+      }
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -216,27 +249,60 @@ export default function DashboardLayout({
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex items-center gap-2">
                 <Avatar className="w-8 h-8">
-                  <AvatarFallback>{getInitials(currentUser.name)}</AvatarFallback>
+                  <AvatarFallback>{currentUser ? getInitials(currentUser.name) : "?"}</AvatarFallback>
                 </Avatar>
-                <span className="hidden md:inline">{currentUser.name}</span>
+                <span className="hidden md:inline">{currentUser?.name || "Loading..."}</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuContent align="end" className="w-64">
               <DropdownMenuLabel>
                 <div className="flex flex-col">
-                  <span>{currentUser.name}</span>
+                  <span>{currentUser?.name}</span>
                   <span className="text-xs text-gray-500 font-normal">
-                    {currentUser.email}
+                    {currentUser?.email}
                   </span>
+                  <Badge variant="outline" className="mt-1 w-fit text-xs">
+                    {currentUser?.role?.replace("_", " ")}
+                  </Badge>
                 </div>
               </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              
+              {/* Switch User Section */}
+              <DropdownMenuLabel className="text-xs text-gray-500 font-normal">
+                <div className="flex items-center gap-1">
+                  <ArrowRightLeft className="w-3 h-3" />
+                  Switch to another user
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuGroup>
+                {users.slice(0, 8).map((user) => (
+                  <DropdownMenuItem 
+                    key={user.id} 
+                    onClick={() => handleSwitchUser(user.id)}
+                    className="flex items-center gap-2"
+                  >
+                    <Avatar className="w-6 h-6">
+                      <AvatarFallback className="text-xs">{getInitials(user.name)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col">
+                      <span className="text-sm">{user.name}</span>
+                      <span className="text-xs text-gray-500">{user.role.replace("_", " ")}</span>
+                    </div>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuGroup>
+              
               <DropdownMenuSeparator />
               <DropdownMenuItem>
                 <Settings className="w-4 h-4 mr-2" />
                 Settings
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600">
+              <DropdownMenuItem 
+                className="text-red-600"
+                onClick={logout}
+              >
                 <LogOut className="w-4 h-4 mr-2" />
                 Log out
               </DropdownMenuItem>
@@ -253,7 +319,7 @@ export default function DashboardLayout({
         )}
       >
         {/* Organization Info */}
-        {!collapsed && (
+        {!collapsed && currentOrganization && (
           <div className="p-4 border-b">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-navy-100 rounded-lg flex items-center justify-center">
