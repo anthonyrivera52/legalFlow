@@ -35,7 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Building2, MoreVertical, Plus, Search, Edit, Trash2, Eye } from "lucide-react";
+import { Building2, MoreVertical, Plus, Search, Edit, Trash2, Eye, User } from "lucide-react";
 import { organizations, users, plans } from "@/data";
 import { formatDate, getPlanColor } from "@/lib/utils";
 import { useState } from "react";
@@ -71,39 +71,89 @@ export default function OrganizationsPage() {
                 Create Organization
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-lg">
               <DialogHeader>
                 <DialogTitle>Create New Organization</DialogTitle>
-                <DialogDescription>Add a new law firm to the platform</DialogDescription>
+                <DialogDescription>
+                  Add a new law firm and create its administrator account. The organization will be provisioned and the admin will receive access credentials.
+                </DialogDescription>
               </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Organization Name</label>
-                  <Input placeholder="Enter organization name" />
+              <div className="space-y-6 py-4">
+                {/* Organization Section */}
+                <div className="space-y-4">
+                  <h4 className="text-sm font-semibold text-navy-900 flex items-center gap-2">
+                    <Building2 className="w-4 h-4" />
+                    Organization Details
+                  </h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Organization Name</label>
+                      <Input placeholder="Smith & Associates" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Plan</label>
+                      <Select>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select plan" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {plans.map((plan) => (
+                            <SelectItem key={plan.slug} value={plan.slug}>
+                              {plan.name} - ${plan.price}/mo
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Plan</label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select plan" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {plans.map((plan) => (
-                        <SelectItem key={plan.slug} value={plan.slug}>
-                          {plan.name} - ${plan.price}/mo
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+
+                {/* Admin User Section */}
+                <div className="space-y-4">
+                  <h4 className="text-sm font-semibold text-navy-900 flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    Administrator Account
+                  </h4>
+                  <p className="text-xs text-gray-500">
+                    Create the initial administrator account for this organization. The admin will be able to manage the firm and invite other members.
+                  </p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">First Name</label>
+                      <Input placeholder="John" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Last Name</label>
+                      <Input placeholder="Smith" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Admin Email</label>
+                    <Input type="email" placeholder="john.smith@lawfirm.com" />
+                    <p className="text-xs text-gray-500">
+                      This email will be used for login. A temporary password will be generated.
+                    </p>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Owner Email</label>
-                  <Input type="email" placeholder="owner@lawfirm.com" />
+
+                {/* Info Box */}
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <h5 className="font-medium text-yellow-900 mb-1">Important</h5>
+                  <p className="text-sm text-yellow-800">
+                    After creation, the organization admin will need to:
+                  </p>
+                  <ul className="text-sm text-yellow-800 mt-2 space-y-1 list-disc list-inside">
+                    <li>Set up their account password</li>
+                    <li>Configure organization settings</li>
+                    <li>Invite lawyers and staff members</li>
+                  </ul>
                 </div>
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
-                <Button className="bg-navy-700 hover:bg-navy-800">Create Organization</Button>
+                <Button className="bg-navy-700 hover:bg-navy-800">
+                  Create Organization & Admin
+                </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
