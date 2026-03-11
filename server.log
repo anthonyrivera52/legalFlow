@@ -1,0 +1,16 @@
+
+> lexflow@1.0.0 dev
+> next dev
+
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+ ✓ Ready in 1204ms
+ ○ Compiling / ...
+ ✓ Compiled / in 2.5s (528 modules)
+ GET / 200 in 2699ms
+ ✓ Compiled in 268ms (257 modules)
+ ○ Compiling /admin ...
+ ✓ Compiled /admin in 1208ms (787 modules)
+ GET /admin 200 in 1357ms
